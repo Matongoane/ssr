@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f7a56"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<title>SSR – School Smart Register</title>
+<style>
+:root{color-scheme:light;--bg:#f6f7f4;--card:#fff;--tx:#1d2a24;--mu:#66736c;--ac:#1f7a56;--acx:#fff;--bd:#dde3de;--ab:#fde8e6;--abt:#b3261e;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#121a16;--card:#1b2620;--tx:#e8efea;--mu:#9aaaa1;--ac:#3fb487;--acx:#08150f;--bd:#2c3a33;--ab:#3a1f1d;--abt:#ff8a80}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;max-width:640px;margin:auto;padding:12px}
+a{color:var(--ac)}
+.tabs{display:flex;gap:6px;margin:10px 0 12px}.tabs button{flex:1;padding:10px 2px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;font-size:14px}
+.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+label{font-size:13px;color:var(--mu);display:block;margin-bottom:4px}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
+.row{display:flex;gap:10px;margin-bottom:8px}.row>div{flex:1}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0}
+.chip{flex:0 0 auto;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;font-size:13px;text-align:center}
+.chip.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}.chip.has{border-color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:26px}.stats span{font-size:12px;color:var(--mu)}.stats .a b{color:var(--abt)}
+.li{border-bottom:1px solid var(--bd)}.li.ab{background:var(--ab)}
+.l{display:flex;align-items:center;gap:10px;padding:10px 6px;cursor:pointer;color:var(--tx);font-size:15px;margin:0}
+.l input{width:24px;height:24px;flex:0 0 auto;accent-color:var(--abt);padding:0}
+.nm{flex:1;min-width:0}.gd{font-size:13px;color:var(--mu);width:54px}
+.ct{font-size:14px;color:var(--mu);padding:0 6px 10px}.ct a{display:inline-block;padding:4px 2px;font-weight:600}
+.btn{padding:10px 14px;border:0;border-radius:8px;background:var(--ac);color:var(--acx);font:inherit;font-weight:600}
+.btn.s{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.mu{color:var(--mu);font-size:13px}.ok{color:var(--ac)}.bad{color:var(--abt)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px;border-bottom:1px solid var(--bd);text-align:left}
+@media print{#hd,#tabs,.np{display:none!important}body{background:#fff;color:#000;max-width:none}.card{border:0}@page{size:landscape;margin:8mm}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script></head><body>
+<div id="hd"></div><div class="tabs" id="tabs"></div><div id="app"></div>
+<p class="mu" style="text-align:center;margin:18px 0">SSR – School Smart Register<br>© 2026 Matongoane Karabo Vincent. All rights reserved.</p>
+<script>
+/* ===== 1. PASTE YOUR TWO SUPABASE VALUES HERE (see README) ===== */
+const CFG={url:"https://tzijryiqueexkeltttfu.supabase.co",key:"sb_publishable_3Q7WtLsytgHnJwom9GrZ2g_TRcQjeG8"};
+/* =============================================================== */
+const MN=["January","February","March","April","May","June","July","August","September","October","November","December"],DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const GR=["R",...Array.from({length:12},(_,i)=>String(i+1))];
+const LG=["English","Afrikaans","isiZulu","isiXhosa","isiNdebele","Sepedi","Sesotho","Setswana","siSwati","Tshivenda","Xitsonga"];
+const SG={"Languages":[...LG.flatMap(l=>[l+" Home Language",l+" First Additional Language",l+" Second Additional Language"]),"South African Sign Language Home Language","French Second Additional Language","German Second Additional Language","Portuguese Second Additional Language","Italian Second Additional Language","Spanish Second Additional Language","Mandarin Second Additional Language","Arabic Second Additional Language","Hindi Second Additional Language","Gujarati Second Additional Language","Tamil Second Additional Language","Telugu Second Additional Language","Urdu Second Additional Language","Hebrew Second Additional Language","Latin","Greek","Serbian","Reading and Literacy","Library and Information Skills"],
+"Mathematics":["Numeracy (Grade R)","Mathematics","Mathematical Literacy","Technical Mathematics"],
+"Sciences and Technology":["Natural Sciences and Technology","Natural Sciences","Technology","Physical Sciences","Life Sciences","Technical Sciences","Information Technology","Computer Applications Technology","Computer Literacy","Coding and Robotics"],
+"Social and Economic":["Social Sciences","Geography","History","Economic and Management Sciences","Economics","Religion Studies","Religion Education"],
+"Life Skills and Sport":["Life Skills","Life Skills: Beginning Knowledge","Life Skills: Creative Arts","Life Skills: Physical Education","Life Skills: Personal and Social Wellbeing","Life Orientation","Physical Education","Sport"],
+"Arts":["Creative Arts","Dance Studies","Dramatic Arts","Music","Visual Arts","Design"],
+"Commerce and Services":["Accounting","Business Studies","Consumer Studies","Hospitality Studies","Tourism"],
+"Technical":["Civil Technology","Electrical Technology","Mechanical Technology","Engineering Graphics and Design"],
+"Agriculture and Maritime":["Agricultural Sciences","Agricultural Management Practices","Agricultural Technology","Equine Studies","Maritime Economics","Marine Sciences","Nautical Science"]};
+const SUBJ=Object.values(SG).flat();
+const subSel=cur=>`<select id="sj"><option value="">Choose subject</option>${Object.entries(SG).map(([g,a])=>`<optgroup label="${g}">${a.map(x=>`<option ${x==cur?"selected":""}>${esc(x)}</option>`).join("")}</optgroup>`).join("")}${cur&&!SUBJ.includes(cur)?`<option selected>${esc(cur)}</option>`:""}</select>`;
+const sjv=()=>val("sjo")||val("sj");
+const $=id=>document.getElementById(id),val=id=>$(id).value.trim(),pad=n=>String(n).padStart(2,"0");
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function fw(d){while(d.getDay()==0||d.getDay()==6)d.setDate(d.getDate()+1);return d}
+const nm=l=>(l.surname+" "+l.name).trim(),GT={M:"Male",F:"Female"};
+const srt=a=>a.sort((x,y)=>nm(x).localeCompare(nm(y),undefined,{sensitivity:"base",numeric:true}));
+const pg=id=>{const m=String(id||"").match(/^(R|\d{1,2})(.*)$/);return m?[m[1],m[2]]:["",""]};
+const gs=s=>`<option value="">Grade</option>`+GR.map(x=>`<option ${x==s?"selected":""}>${x}</option>`).join("");
+const cs=s=>{const L=["A","B","C","D"];if(s&&!L.includes(s))L.push(s);return `<option value="">Class</option>`+L.map(x=>`<option ${x==s?"selected":""}>${x}</option>`).join("")};
+const sec=v=>v.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,3);
+const tel=n=>n?`<a href="tel:${esc(n)}">${esc(n)}</a>`:"";
+const logo=n=>`<svg width="${n}" height="${n}" viewBox="0 0 64 64" aria-label="SSR logo"><rect width="64" height="64" rx="14" fill="#1f7a56"/><path d="M17 25l9 9 19-19" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="54" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">SSR</text></svg>`;
+const brand=()=>`<div style="display:flex;align-items:center;gap:10px">${logo(46)}<div><div style="font-size:20px;font-weight:700">SSR</div><div class="mu">School Smart Register</div></div></div>`;
+let sb=null,ME=null,SCH=null,T=[],NT="",CF=null,BUSY=false,CC={};
+let U={scr:"login",tab:"daily",cls:"",date:iso(fw(new Date())),p:"1",add:false,ed:null,te:null,ac:"",fp:""};
+const L={},C={},R={},F={};
+const note=t=>{NT=t;render()},ask=(t,f)=>{CF={t,f};render()},er=e=>{BUSY=false;note(e&&e.message?e.message:"Network problem. Please try again.")};
+const chk=async p=>{const r=await p;if(r.error)throw r.error;return r};
+const per=()=>U.tab=="period",cid=()=>per()?U.cls:U.tab=="adm"?U.ac:ME.main_class;
+const key=()=>per()?"period|"+U.cls+"|"+U.date+"|"+U.p:"daily|"+ME.main_class+"|"+U.date+"|0";
+const abs=(k,c)=>(R[k]||[]).filter(id=>(L[c]||[]).some(x=>x.id==id));
+/* ---------- data loading ---------- */
+async function loadClass(c){const d=(await chk(sb.from("learners").select("id,surname,name,gender").eq("class",c))).data;L[c]=srt(d);C[c]={};
+ if(ME.role=="admin"||c==ME.main_class)(await chk(sb.from("contacts").select("learner_id,contact1,contact2").eq("class",c))).data.forEach(x=>C[c][x.learner_id]=x)}
+async function loadMonth(kind,c,y,m){const a=y+"-"+pad(m+1)+"-01",b=iso(new Date(y,m+1,1)),pre=kind+"|"+c+"|"+y+"-"+pad(m+1);
+ const d=(await chk(sb.from("registers").select("att_date,period,absent").eq("class",c).eq("kind",kind).gte("att_date",a).lt("att_date",b))).data;
+ for(const k in R)if(k.startsWith(pre))delete R[k];d.forEach(r=>R[kind+"|"+c+"|"+r.att_date+"|"+r.period]=r.absent)}
+async function loadFood(c,y,m){const a=y+"-"+pad(m+1)+"-01",b=iso(new Date(y,m+1,1));
+ for(const k in F)if(k.startsWith(c+"|"+y+"-"+pad(m+1)))delete F[k];
+ (await chk(sb.from("food").select("*").eq("class",c).gte("att_date",a).lt("att_date",b))).data.forEach(r=>F[c+"|"+r.att_date]={rq:r.required,reqM:r.req_main||"",reqB:r.req_breakfast||"",srvM:r.srv_main||"",srvB:r.srv_breakfast||"",t:r.time_served||"",c:r.comments||"",g:r.signature||"",sv:r.served})}
+async function prep(){if(!ME)return;const d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth();
+ if(ME.role=="admin"){T=(await chk(sb.from("profiles").select("*").eq("role","teacher"))).data.sort((a,b)=>a.username.localeCompare(b.username));
+  CC={};(await chk(sb.from("learners").select("class"))).data.forEach(x=>CC[x.class]=(CC[x.class]||0)+1);if(U.ac)await loadClass(U.ac);return}
+ const mc=ME.main_class;
+ if(U.tab=="daily"||U.tab=="food"||U.tab=="con"){await loadClass(mc);if(U.tab!="con")await loadMonth("daily",mc,y,m);if(U.tab=="food")await loadFood(mc,y,m)}
+ if(U.tab=="period"&&(ME.period_classes||[]).length){if(!ME.period_classes.includes(U.cls))U.cls=ME.period_classes[0];await loadClass(U.cls);await loadMonth("period",U.cls,y,m)}}
+async function show(){BUSY=true;render();try{await prep();BUSY=false}catch(e){er(e);return}render()}
+/* ---------- sign in / school ---------- */
+async function boot(){const s=(await sb.auth.getSession()).data.session;if(!s){ME=null;render();return}
+ const p=(await sb.from("profiles").select("*").eq("id",s.user.id).maybeSingle()).data;
+ if(!p){await sb.auth.signOut();ME=null;note("This account does not belong to a school (it may have been removed). Ask your administrator.");return}
+ ME=p;SCH=(await chk(sb.from("schools").select("*").eq("id",p.school_id).single())).data;
+ U.tab=p.role=="admin"?"adm":"daily";U.cls=(p.period_classes||[])[0]||"";await show()}
+async function login(){const code=val("lc"),un=val("lu"),pw=$("lw").value;if(!un||!pw){note("Enter your username and password.");return}
+ try{let em=un;if(!un.includes("@")){if(!code){note("Enter the school code.");return}em=(await chk(sb.rpc("login_email",{p_code:code,p_user:un}))).data;if(!em){note("Wrong school code, username or password.");return}}
+  const a=await sb.auth.signInWithPassword({email:em,password:pw});if(a.error){note("Wrong school code, username or password.");return}await boot()}catch(e){er(e)}}
+async function logout(){await sb.auth.signOut();ME=null;SCH=null;for(const o of [L,C,R,F])for(const k in o)delete o[k];U.scr="login";CF=null;render()}
+async function mkSchool(){const sn=val("sn"),code=val("sc").toLowerCase(),un=val("an"),em=val("ae").toLowerCase(),pw=$("ap").value;
+ if(!sn||!un||!/^\S+@\S+\.\S+$/.test(em)){note("Enter the school name, your name and a valid email.");return}
+ if(!/^[a-z0-9]{3,20}$/.test(code)){note("School code: 3 to 20 letters or numbers, no spaces.");return}
+ if(pw.length<6){note("Password must be 6 or more characters.");return}
+ try{let a=await sb.auth.signUp({email:em,password:pw});
+  if(a.error&&/registered/i.test(a.error.message)){a=await sb.auth.signInWithPassword({email:em,password:pw});if(a.error){note("That email is already used. Log in, or use Forgot password.");return}}
+  else if(a.error){note(a.error.message);return}
+  if(!a.data.session){note("Account created, but Supabase wants email confirmation. Turn OFF “Confirm email” in Supabase, then try again.");return}
+  const r=await sb.rpc("create_school",{p_name:sn,p_code:code,p_user:un});
+  if(r.error){note(/duplicate|unique/i.test(r.error.message)?"That school code is already taken. Choose another.":r.error.message);return}
+  await boot()}catch(e){er(e)}}
+async function fpSend(){const em=val("fe").toLowerCase();if(!/^\S+@\S+\.\S+$/.test(em)){note("Enter the administrator email.");return}
+ try{await chk(sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}));U.fp=em;note("Check your email. Enter the code below, or open the link in the email.")}catch(e){er(e)}}
+async function fpGo(){const t=val("ft"),np=$("fn").value;if(np.length<6){note("New password must be 6 or more characters.");return}
+ try{const v=await sb.auth.verifyOtp({email:U.fp,token:t,type:"recovery"});if(v.error){note("Wrong or expired code.");return}await chk(sb.auth.updateUser({password:np}));U.scr="login";await boot()}catch(e){er(e)}}
+async function newPw(){const np=$("fn").value;if(np.length<6){note("New password must be 6 or more characters.");return}try{await chk(sb.auth.updateUser({password:np}));U.scr="login";history.replaceState(null,"",location.pathname);await boot()}catch(e){er(e)}}
+async function chPw(){const p=$("np").value;if(p.length<6){note("Use 6 or more characters.");return}try{await chk(sb.auth.updateUser({password:p}));note("Password changed.")}catch(e){er(e)}}
+/* ---------- registers ---------- */
+function setMonth(v){let[y,m]=v.split("-").map(Number);U.date=iso(fw(new Date(y,m-1,1)));show()}
+const pick=d=>{U.date=d;render()};
+async function tog(id){const k=key(),old=R[k],cur=old||[],a=cur.includes(id)?cur.filter(x=>x!=id):[...cur,id],p=per();R[k]=a;render();
+ try{await chk(sb.from("registers").upsert({school_id:ME.school_id,class:cid(),kind:p?"period":"daily",att_date:U.date,period:p?+U.p:0,absent:a,marked_by:ME.id,updated_at:new Date().toISOString()},{onConflict:"school_id,class,kind,att_date,period"}))}catch(e){if(old)R[k]=old;else delete R[k];er(e)}}
+const fk=()=>ME.main_class+"|"+U.date;
+const fget=()=>({rq:null,reqM:"",reqB:"",srvM:"",srvB:"",t:"",c:"",g:"",sv:null,...(F[fk()]||{})});
+async function fset(patch){const o={...fget(),...patch},k=fk(),n=(L[ME.main_class]||[]).length;if(o.rq==null)o.rq=n;F[k]=o;render();
+ try{await chk(sb.from("food").upsert({school_id:ME.school_id,class:ME.main_class,att_date:U.date,required:o.rq,served:o.sv,req_main:o.reqM,req_breakfast:o.reqB,srv_main:o.srvM,srv_breakfast:o.srvB,time_served:o.t,comments:o.c,signature:o.g},{onConflict:"school_id,class,att_date"}))}catch(e){er(e)}}
+function recsFor(y,m,kind,c){const out=[],pre=kind+"|"+c+"|";for(const k in R){if(!k.startsWith(pre))continue;const pt=k.split("|"),dt=new Date(pt[2]+"T00:00");if(dt.getFullYear()==y&&dt.getMonth()==m)out.push({date:pt[2],p:pt[3],dt,abs:abs(k,c)})}
+ return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.p-b.p)}
+function foodRows(y,m){const c=ME.main_class,n=(L[c]||[]).length,out=[];for(let i=1;i<=new Date(y,m+1,0).getDate();i++){const dt=new Date(y,m,i);if(dt.getDay()==0||dt.getDay()==6)continue;
+ const ds=iso(dt),f=F[c+"|"+ds],pr=n-abs("daily|"+c+"|"+ds+"|0",c).length;out.push({ds,dt,f,pr,req:f?(f.rq??n):null,srv:f?(f.sv??pr):null})}return out}
+const foodTot=rows=>{const r=rows.filter(x=>x.f),q=r.reduce((a,x)=>a+x.req,0),v=r.reduce((a,x)=>a+x.srv,0);return{q,v,aq:r.length?Math.round(q/r.length):0,av:r.length?Math.round(v/r.length):0}};
+const tmH=t=>t?t.replace(":","H"):"";
+function csv(name,rows){const q=v=>'"'+String(v).replace(/"/g,'""')+'"',a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"}));a.download=name.replace(/[^\w]+/g,"_")+".csv";document.body.appendChild(a);a.click();a.remove()}
+function expReg(){const d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth(),p=per(),c=cid(),Rr=L[c]||[],rc=recsFor(y,m,p?"period":"daily",c);if(!rc.length){$("msg").textContent="Nothing recorded this month yet.";return}
+ const title=p?`Grade ${c} ${ME.subject} period register - ${MN[m]} ${y}`:`Grade ${c} daily register - ${MN[m]} ${y}`;
+ csv(title,[[title],[SCH.name+" | "+ME.username],["Date","Day",...(p?["Period"]:[]),"Enrolled","Absent","Present","Absent learners"+(p?"":" (parent contacts)")],
+  ...rc.map(r=>[r.date,DN[r.dt.getDay()],...(p?[r.p]:[]),Rr.length,r.abs.length,Rr.length-r.abs.length,r.abs.map(id=>{const l=Rr.find(x=>x.id==id),k=C[c][id],t=p||!k?"":[k.contact1,k.contact2].filter(Boolean).join(" / ");return nm(l)+(t?" ("+t+")":"")}).join("; ")])])}
+function expFood(){const d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth(),c=ME.main_class,rows=foodRows(y,m),t=foodTot(rows);
+ csv(`Grade ${c} NSNP feeding register - ${MN[m]} ${y}`,[["NSNP DAILY FEEDING REGISTER"],["School",SCH.name,"EMIS",SCH.emis||"","Month",MN[m]+" "+y,"Grade",c],["Day","Date","No. of meals required","Menu required: Main meal","Menu required: Breakfast","No. of meals served","Menu served: Main meal","Menu served: Breakfast","Time served","Comments","Signature"],
+ ...rows.map(r=>{const f=r.f||{};return[DN[r.dt.getDay()],r.ds,r.f?r.req:"",f.reqM||"",f.reqB||"",r.f?r.srv:"",f.srvM||"",f.srvB||"",tmH(f.t),f.c||"",f.g||""]}),["TOTAL","",t.q,"","",t.v],["AVERAGE PER DAY","",t.aq,"","",t.av]])}
+/* ---------- administrator actions ---------- */
+async function saveSchool(){try{await chk(sb.from("schools").update({name:val("sc"),emis:val("se")}).eq("id",SCH.id));SCH.name=val("sc");SCH.emis=val("se");note("School name saved.")}catch(e){er(e)}}
+async function newAcct(un,pw,main,old){const em="t"+crypto.randomUUID().replace(/-/g,"").slice(0,14)+"@ssr-school.app",
+ tmp=supabase.createClient(CFG.url,CFG.key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"ssr-tmp"}});
+ const a=await tmp.auth.signUp({email:em,password:pw});if(a.error)throw a.error;if(!a.data.user)throw new Error("Could not create the account.");
+ if(old)await chk(sb.from("profiles").delete().eq("id",old.id));
+ await chk(sb.from("profiles").insert({id:a.data.user.id,school_id:ME.school_id,username:un,login_email:em,role:"teacher",main_class:main,subject:old?old.subject:"",period_classes:old?old.period_classes:[main]}))}
+async function saveT(){const un=val("tn"),g=val("tg"),pw=$("tp").value,main=g+sec($("ts").value),ex=U.te!="new"?U.te:null;if(!un||!g){note("Enter the username and choose a grade.");return}
+ if(T.some(x=>x.id!=ex&&x.username.toLowerCase()==un.toLowerCase())){note("That username already exists. Try a new username.");return}
+ try{const old=ex&&T.find(x=>x.id==ex);
+  if(old){if(pw){if(pw.length<6){note("Password must be 6 or more characters.");return}await newAcct(un,pw,main,old)}else await chk(sb.from("profiles").update({username:un,main_class:main}).eq("id",ex))}
+  else{if(pw.length<6){note("Give a password of 6 or more characters.");return}await newAcct(un,pw,main,null)}
+  U.te=null;await show()}catch(e){er(/duplicate|unique/i.test(e.message||"")?{message:"That username already exists. Try a new username."}:e)}}
+const delT=id=>{const t=T.find(x=>x.id==id);ask("Delete "+t.username+"’s account? Learners and attendance stay.",async()=>{await chk(sb.from("profiles").delete().eq("id",id))})};
+async function doCF(){const f=CF.f;CF=null;try{await f();await show()}catch(e){er(e)}}
+function openC(){const g=val("ag");if(!g){note("Choose a grade.");return}U.ac=g+sec($("as").value);U.add=false;U.ed=null;show()}
+async function saveL(){const s=val("ls"),f=val("lf"),g=$("lg").value;if(!s||!f||!g){note("Enter the surname, name and choose a gender.");return}
+ const c=U.ac,o={surname:s,name:f,gender:g},k={contact1:val("l1"),contact2:val("l2")};
+ try{if(U.ed){await chk(sb.from("learners").update(o).eq("id",U.ed));await chk(sb.from("contacts").upsert({learner_id:U.ed,school_id:ME.school_id,class:c,...k}))}
+  else{const r=await chk(sb.from("learners").insert({school_id:ME.school_id,class:c,...o}).select("id").single());await chk(sb.from("contacts").insert({learner_id:r.data.id,school_id:ME.school_id,class:c,...k}))}
+  U.add=false;U.ed=null;await show()}catch(e){er(e)}}
+function editL(id){if(!id)return;U.ed=id;U.add=true;render();scrollTo(0,0)}
+function delL(id){if(!id)return;const l=L[U.ac].find(x=>x.id==id);ask("Delete "+nm(l)+" from Grade "+U.ac+"?",async()=>{await chk(sb.from("learners").delete().eq("id",id))})}
+async function impCsv(inp){const fl=inp.files[0],m=$("pm"),c=U.ac;if(!fl)return;const t=(await fl.text()).replace(/^\ufeff/,""),ls=t.split(/\r?\n/).filter(x=>x.trim());if(!ls.length){m.textContent="The file is empty.";return}
+ const dl=ls[0].includes("\t")?"\t":(ls[0].split(";").length>ls[0].split(",").length?";":",");
+ const sp=l=>{const o=[];let q=false,s="";for(const ch of l){if(ch=='"')q=!q;else if(ch==dl&&!q){o.push(s.trim());s=""}else s+=ch}o.push(s.trim());return o};
+ const have=new Set(L[c].map(l=>nm(l).toLowerCase())),rows=[];
+ ls.forEach((l,i)=>{const r=sp(l);if(i==0&&/^(surname|last ?name|name)$/i.test(r[0]))return;const s=r[0],f=r[1]||"",k=(s+" "+f).trim().toLowerCase();if(!s||have.has(k))return;have.add(k);rows.push({s,f,g:/^(m|b)/i.test(r[2]||"")?"M":/^(f|g)/i.test(r[2]||"")?"F":null,c1:r[3]||"",c2:r[4]||""})});
+ if(!rows.length){m.textContent="No new learners found in the file.";return}
+ try{m.textContent="Saving "+rows.length+" learners…";const ins=(await chk(sb.from("learners").insert(rows.map(r=>({school_id:ME.school_id,class:c,surname:r.s,name:r.f,gender:r.g}))).select("id"))).data;
+  await chk(sb.from("contacts").insert(ins.map((x,i)=>({learner_id:x.id,school_id:ME.school_id,class:c,contact1:rows[i].c1,contact2:rows[i].c2}))));
+  NT=rows.length+" learners added from the file.";await show()}catch(e){er(e)}inp.value=""}
+async function saveS(){const pc=[];for(let i=0;i<10;i++)if(val("pg"+i)){const c=val("pg"+i)+sec($("ps"+i).value);if(!pc.includes(c))pc.push(c)}
+ try{await chk(sb.rpc("set_my_period",{p_subject:sjv(),p_classes:pc}));ME.subject=sjv();ME.period_classes=pc;U.cls=pc[0]||"";note("Saved.")}catch(e){er(e)}}
+/* ---------- views ---------- */
+function nav(kf,extra){const d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth(),days=[];
+ for(let i=1;i<=new Date(y,m+1,0).getDate();i++){const x=new Date(y,m,i);if(x.getDay()>0&&x.getDay()<6)days.push(x)}
+ return `<div class="card"><div class="row"><div><label>Month</label><input type="month" value="${y}-${pad(m+1)}" onchange="setMonth(this.value)"></div>${extra||""}</div><label>Mon–Fri only: tap a day</label><div class="chips">${days.map(x=>`<button class="chip ${iso(x)==U.date?"on":""} ${kf(iso(x))?"has":""}" onclick="pick('${iso(x)}')">${DN[x.getDay()]}<br><b>${x.getDate()}</b></button>`).join("")}</div></div>`}
+function stats(Rr,ab){const g=x=>ab.filter(id=>(Rr.find(l=>l.id==id)||{}).gender==x).length,mt=Rr.filter(l=>l.gender=="M").length,ft=Rr.filter(l=>l.gender=="F").length;
+ return `<div class="card"><div class="stats"><div><b>${Rr.length}</b><span>Enrolled<br>${mt} male · ${ft} female</span></div><div class="a"><b>${ab.length}</b><span>Absent<br>${g("M")} male · ${g("F")} female</span></div><div><b>${Rr.length-ab.length}</b><span>Present</span></div></div></div>`}
+function regV(){const p=per(),c=cid(),Rr=L[c]||[],k=key(),ab=abs(k,c),d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth();
+ let h=nav(dt=>R[p?"period|"+c+"|"+dt+"|"+U.p:"daily|"+c+"|"+dt+"|0"]!==undefined,p?`<div><label>Class</label><select onchange="U.cls=this.value;show()">${ME.period_classes.map(x=>`<option value="${esc(x)}" ${U.cls==x?"selected":""}>Grade ${esc(x)}</option>`).join("")}</select></div><div><label>Period</label><select onchange="U.p=this.value;render()">${Array.from({length:20},(_,i)=>i+1).map(n=>`<option ${U.p==n?"selected":""}>${n}</option>`).join("")}</select></div>`:"")
+ +`<div class="mu" style="margin:-4px 0 10px">${p?esc(ME.subject)+" · Grade "+esc(c):"Daily register · Grade "+esc(c)} · ${DN[d.getDay()]} ${d.getDate()} ${MN[m]} ${y}</div>`+stats(Rr,ab);
+ h+=`<div class="card"><b>Learners · tick absent</b><p class="mu">Tick a learner who is absent.</p>`+(Rr.length?Rr.map((l,i)=>{const a=ab.includes(l.id);return `<div class="li ${a?"ab":""}"><label class="l"><span class="nm">${i+1}. ${esc(nm(l))}</span><span class="gd">${GT[l.gender]||"–"}</span><input type="checkbox" ${a?"checked":""} onchange="tog('${l.id}')"></label></div>`}).join(""):`<p class="mu">The administrator has not added learners for this class yet.</p>`)+`</div>`;
+ const rows=recsFor(y,m,p?"period":"daily",c).map(r=>`<tr onclick="U.date='${r.date}';U.p='${r.p||1}';render();scrollTo(0,0)" style="cursor:pointer"><td>${DN[r.dt.getDay()]} ${r.dt.getDate()}${p?" · P"+r.p:""}</td><td>${r.abs.length}</td><td>${r.abs.length?r.abs.map(id=>esc(nm(Rr.find(x=>x.id==id)))).join(", "):"None"}</td></tr>`).join("");
+ return h+`<div class="card"><b>${MN[m]} summary</b>${rows?`<table><tr><th>Day</th><th>Abs.</th><th>Absent learners</th></tr>${rows}</table><p class="mu">Tap a row to open that day.</p>`:`<p class="mu">No days recorded yet this month.</p>`}<p><button class="btn" onclick="expReg()">Export CSV</button></p><p class="mu" id="msg"></p></div>`}
+function cView(){const c=ME.main_class,Rr=L[c]||[];return `<div class="card"><b>Parents / guardian contacts</b><p class="mu">Grade ${esc(c)} only. Tap a number to call in an emergency.</p>${Rr.length?Rr.map((l,i)=>{const k=C[c][l.id]||{};return `<div class="li"><div class="l" style="cursor:default;padding-bottom:2px"><span class="nm">${i+1}. ${esc(nm(l))}</span><span class="gd">${GT[l.gender]||"–"}</span></div><div class="ct">${k.contact1||k.contact2?`📞 ${tel(k.contact1)}${k.contact1&&k.contact2?" · ":""}${tel(k.contact2)}`:"No contact numbers"}</div></div>`}).join(""):`<p class="mu">No learners yet. The administrator adds them.</p>`}</div>`}
+function foodV(){const c=ME.main_class,n=(L[c]||[]).length,dk="daily|"+c+"|"+U.date+"|0",d=new Date(U.date+"T00:00"),y=d.getFullYear(),m=d.getMonth(),ab=abs(dk,c).length,pr=n-ab,f=fget(),sv=f.sv??pr,ok=sv==pr;
+ const inp=(k,ph,t)=>`<input ${t?`type="${t}" `:""}value="${esc(f[k])}" placeholder="${esc(ph||"")}" onchange="fset({${k}:this.value})">`,rows=foodRows(y,m),T=foodTot(rows);
+ let h=`<div class="card"><div style="text-align:center"><b>NSNP DAILY FEEDING REGISTER</b><div class="mu">${esc(SCH.name)}${SCH.emis?" · EMIS "+esc(SCH.emis):""}<br>${MN[m]} ${y} · Grade ${esc(c)}</div></div></div><div class="np">${nav(dt=>F[c+"|"+dt]!==undefined)}</div>`;
+ h+=`<div class="card np"><b>${DN[d.getDay()]} ${d.getDate()} ${MN[m]} ${y}</b><div class="mu">Enrolled ${n} · Absent ${ab} (from the daily register) · Present ${pr}</div>${R[dk]===undefined?`<p class="mu bad">Daily register not marked for this day yet. All learners are counted as present.</p>`:""}
+ <p style="margin:12px 0 4px"><b>REQUIRED</b></p><div class="row"><div><label>No. of meals required</label><input value="${f.rq??n}" disabled></div></div>
+ <div class="row"><div><label>Menu: Main meal</label>${inp("reqM")}</div><div><label>Menu: Breakfast</label>${inp("reqB")}</div></div>
+ <p style="margin:12px 0 4px"><b>SERVED</b></p><div class="row"><div><label>No. of meals served</label><input type="number" inputmode="numeric" value="${sv}" onchange="fset({sv:this.value===''?null:+this.value})"></div></div>
+ <div class="${ok?"ok":"bad"}" style="font-size:13px;margin-bottom:8px">${ok?"✔ Matches the learners present on the daily register ("+pr+")":"✖ Does not match the "+pr+" present ("+n+" enrolled, "+ab+" absent)"}</div>
+ <div class="row"><div><label>Menu: Main meal</label>${inp("srvM",f.reqM)}</div><div><label>Menu: Breakfast</label>${inp("srvB",f.reqB)}</div></div>
+ <p><button class="btn s" onclick="fset({srvM:fget().reqM,srvB:fget().reqB})">Same as required menu</button></p>
+ <div class="row"><div><label>Time served</label>${inp("t","","time")}</div><div><label>Signature (initials)</label>${inp("g")}</div></div><label>Comments</label>${inp("c","e.g. 4 absent")}
+ <p>${ab?`<button class="btn s" onclick="fset({c:'${ab} absent'})">Add “${ab} absent”</button> `:""}<button class="btn" onclick="fset({})">Save this day</button> <button class="btn s" onclick="fset({sv:null})">Reset served</button></p></div>`;
+ const tr=rows.map(r=>{const g=r.f||{};return `<tr onclick="U.date='${r.ds}';render();scrollTo(0,0)" style="cursor:pointer;${r.ds==U.date?"background:var(--ab)":""}"><td>${DN[r.dt.getDay()]}</td><td>${r.ds.slice(8)}/${r.ds.slice(5,7)}</td><td>${r.f?r.req:""}</td><td>${esc(g.reqM)}</td><td>${esc(g.reqB)}</td><td class="${r.f&&r.srv!=r.pr?"bad":""}">${r.f?r.srv:""}</td><td>${esc(g.srvM)}</td><td>${esc(g.srvB)}</td><td>${tmH(g.t)}</td><td>${esc(g.c)}</td><td>${esc(g.g)}</td></tr>`}).join("");
+ return h+`<div class="card"><b>${MN[m]} ${y} register</b><div style="overflow-x:auto"><table style="min-width:760px;font-size:12px"><tr><th>Day</th><th>Date</th><th>Meals req.</th><th>Main meal</th><th>Breakfast</th><th>Meals served</th><th>Main meal</th><th>Breakfast</th><th>Time</th><th>Comments</th><th>Sign.</th></tr>${tr}<tr><th colspan="2">TOTAL</th><th>${T.q}</th><th></th><th></th><th>${T.v}</th><th colspan="5"></th></tr><tr><th colspan="2">AVERAGE PER DAY</th><th>${T.aq}</th><th></th><th></th><th>${T.av}</th><th colspan="5"></th></tr></table></div><p class="np"><button class="btn" onclick="expFood()">Export CSV</button> <button class="btn s" onclick="window.print()">Print / Save as PDF</button></p><p class="mu np" id="msg">Tap a row to open that day. Red served numbers do not match the daily register.</p></div>`}
+const pwCard=()=>`<div class="card"><b>Change my password</b><label style="margin-top:8px">New password (6+ characters)</label><input id="np" type="password"><p><button class="btn" onclick="chPw()">Change password</button></p></div>`;
+function stg(){let h=`<div class="card"><b>Period register</b><p class="mu">Your class, Grade ${esc(ME.main_class)}, is set by the administrator and can’t be changed here.</p><label>Subject you teach (all South African school subjects, R–12)</label>${subSel(ME.subject)}<input id="sjo" placeholder="Other subject (only if not in the list)" style="margin-top:6px"><label style="margin-top:12px">Classes you teach it to (up to 10, e.g. 6A and 6B)</label>`;
+ for(let i=0;i<10;i++){const[a,b]=pg((ME.period_classes||[])[i]);h+=`<div class="row"><div><select id="pg${i}">${gs(a)}</select></div><div><select id="ps${i}">${cs(b)}</select></div></div>`}
+ return h+`<button class="btn" onclick="saveS()">Save</button></div>`+pwCard()}
+function admL(){const Rr=U.ac?L[U.ac]||[]:[],l0=U.ed&&Rr.find(x=>x.id==U.ed)||{},k0=U.ed&&(C[U.ac]||{})[U.ed]||{},
+ kn=[...new Set([...T.flatMap(u=>[u.main_class,...(u.period_classes||[])]),...Object.keys(CC)])].filter(Boolean).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ let h=`<div class="card"><b>Learners and parent contacts</b><p class="mu">Add each class here once. Teachers only tick who is absent and call parents.</p><label>Class</label><select onchange="U.ac=this.value;U.add=false;U.ed=null;show()"><option value="">Choose a class</option>${kn.map(c=>`<option value="${esc(c)}" ${U.ac==c?"selected":""}>Grade ${esc(c)} (${CC[c]||0} learners)</option>`).join("")}</select><label style="margin-top:8px">Or open a new class</label><div class="row"><div><select id="ag">${gs("")}</select></div><div><select id="as">${cs("")}</select></div><button class="btn" style="flex:0" onclick="openC()">Open</button></div>`;
+ if(U.ac){h+=`<div class="row" style="align-items:center;margin-top:8px"><b style="flex:1">Grade ${esc(U.ac)} · ${Rr.length} learners</b><button class="btn" style="flex:0;white-space:nowrap" onclick="U.add=!U.add;U.ed=null;render()">${U.add?"Close":"+ Add"}</button></div>`;
+  if(U.add)h+=`<div style="border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:10px"><b>${U.ed?"Edit learner":"Add learner"}</b><div class="row" style="margin-top:8px"><div><label>Surname</label><input id="ls" value="${esc(l0.surname)}"></div><div><label>Name</label><input id="lf" value="${esc(l0.name)}"></div></div><div class="row"><div><label>Gender</label><select id="lg"><option value="">Gender</option><option value="M" ${l0.gender=="M"?"selected":""}>Male</option><option value="F" ${l0.gender=="F"?"selected":""}>Female</option></select></div></div><div class="row"><div><label>Parent/guardian contact 1</label><input id="l1" type="tel" inputmode="tel" value="${esc(k0.contact1)}"></div><div><label>Contact 2</label><input id="l2" type="tel" inputmode="tel" value="${esc(k0.contact2)}"></div></div><button class="btn" onclick="saveL()">${U.ed?"Save changes":"Add learner"}</button></div>`;
+  h+=`<div class="row"><div><button class="btn s" style="width:100%" onclick="$('ix').click()">📄 Upload CSV file</button></div></div><input id="ix" type="file" accept=".csv,.txt,text/csv,text/plain" hidden onchange="impCsv(this)"><p class="mu" id="pm"></p><p class="mu">CSV columns: Surname, Name, Gender (M/F), Contact 1, Contact 2. In Excel use Save As CSV.</p>`;
+  const o=Rr.map(l=>`<option value="${l.id}">${esc(nm(l))}</option>`).join("");
+  h+=Rr.length?Rr.map((l,i)=>{const k=(C[U.ac]||{})[l.id]||{};return `<div class="li"><div class="l" style="cursor:default;padding-bottom:2px"><span class="nm">${i+1}. ${esc(nm(l))}</span><span class="gd">${GT[l.gender]||"–"}</span></div>${k.contact1||k.contact2?`<div class="ct">📞 ${tel(k.contact1)}${k.contact1&&k.contact2?" · ":""}${tel(k.contact2)}</div>`:""}</div>`}).join("")+`<div class="row" style="margin-top:12px"><div><select onchange="editL(this.value)"><option value="">Edit a learner…</option>${o}</select></div><div><select onchange="delL(this.value)"><option value="">Delete a learner…</option>${o}</select></div></div>`:`<p class="mu">No learners yet. Use + Add or upload a CSV file.</p>`}
+ return h+`</div>`}
+function adm(){const e=U.te&&U.te!="new"?T.find(u=>u.id==U.te):null,[g,s]=pg(e?e.main_class:"");
+ let h=`<div class="card"><label>School name (shown after login)</label><input id="sc" value="${esc(SCH.name)}"><label style="margin-top:8px">EMIS number (printed on the feeding register)</label><input id="se" value="${esc(SCH.emis)}"><p><button class="btn" onclick="saveSchool()">Save</button></p><p class="mu">School code for teachers to log in: <b>${esc(SCH.code)}</b></p></div><div class="card"><b>Teachers (${T.length})</b>`;
+ h+=T.length?T.map(u=>`<div class="li"><div class="l" style="cursor:default"><div class="nm">${esc(u.username)}<div class="mu">Grade ${esc(u.main_class)} · ${esc(u.subject||"no subject yet")}</div></div><button class="btn s" onclick="U.te='${u.id}';render()">Reassign</button><button class="btn s" onclick="delT('${u.id}')">Delete</button></div></div>`).join(""):`<p class="mu">No teachers yet.</p>`;
+ h+=U.te?`<div style="margin-top:12px"><b>${e?"Edit / reassign "+esc(e.username):"New teacher"}</b><label style="margin-top:8px">Username (surname and initials, e.g. Baloyi TK)</label><input id="tn" value="${esc(e?e.username:"")}"><label style="margin-top:8px">Class teacher for (fixed for the teacher)</label><div class="row"><div><select id="tg">${gs(g)}</select></div><div><select id="ts">${cs(s)}</select></div></div><label>${e?"New password (leave blank to keep; this resets it)":"Password (6+ characters)"}</label><input id="tp" type="password"><p><button class="btn" onclick="saveT()">Save teacher</button> <button class="btn s" onclick="U.te=null;render()">Cancel</button></p></div>`:`<p><button class="btn" onclick="U.te='new';render()">+ Add teacher</button></p>`;
+ return h+`</div>`+admL()+pwCard()}
+function render(){
+ const A=$("app"),Tb=$("tabs"),hd=$("hd");let pre=NT?`<div class="card bad">${esc(NT)}</div>`:"";NT="";
+ if(CF)pre+=`<div class="card" style="border-color:var(--abt)"><b>${esc(CF.t)}</b><div class="row" style="margin:8px 0 0"><div><button class="btn" style="width:100%" onclick="doCF()">Yes</button></div><div><button class="btn s" style="width:100%" onclick="CF=null;render()">Cancel</button></div></div></div>`;
+ Tb.innerHTML="";
+ if(!sb){hd.innerHTML=brand();A.innerHTML=`<div class="card bad"><b>Setup needed</b><p>Open index.html and paste your Supabase URL and key at the top (see README).</p></div>`;return}
+ if(!ME){hd.innerHTML=brand();const s=U.scr;
+  if(s=="create")A.innerHTML=pre+`<div class="card"><b>Create your school</b><p class="mu">You become the administrator. You add the teachers and their classes afterwards.</p><label>School name</label><input id="sn"><label style="margin-top:8px">School code (teachers type this to log in)</label><input id="sc" placeholder="e.g. ramaite" autocapitalize="none"><label style="margin-top:8px">Your name (administrator)</label><input id="an"><label style="margin-top:8px">Your email (used to log in and recover your password)</label><input id="ae" type="email" inputmode="email" autocapitalize="none"><label style="margin-top:8px">Password (6+ characters)</label><input id="ap" type="password"><p><button class="btn" onclick="mkSchool()">Create school</button> <button class="btn s" onclick="U.scr='login';render()">Back to login</button></p></div>`;
+  else if(s=="forgot")A.innerHTML=pre+`<div class="card"><b>Reset administrator password</b><label style="margin-top:8px">Administrator email</label><input id="fe" type="email" autocapitalize="none" value="${esc(U.fp)}"><p><button class="btn" onclick="fpSend()">Send me a code</button></p>${U.fp?`<label>Code from the email</label><input id="ft" inputmode="numeric"><label style="margin-top:8px">New password (6+ characters)</label><input id="fn" type="password"><p><button class="btn" onclick="fpGo()">Reset password</button></p>`:""}<p><button class="btn s" onclick="U.scr='login';render()">Back to login</button></p><p class="mu">Teachers: ask your administrator to reset your password.</p></div>`;
+  else if(s=="newpw")A.innerHTML=pre+`<div class="card"><b>Choose a new password</b><label style="margin-top:8px">New password (6+ characters)</label><input id="fn" type="password"><p><button class="btn" onclick="newPw()">Save password</button></p></div>`;
+  else A.innerHTML=pre+`<div class="card"><b style="font-size:18px">Log in</b><label style="margin-top:8px">School code (teachers)</label><input id="lc" autocapitalize="none"><label style="margin-top:8px">Username (teachers) or email (administrator)</label><input id="lu" autocapitalize="none" autocomplete="username"><label style="margin-top:8px">Password</label><input id="lw" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')login()"><p><button class="btn" style="width:100%" onclick="login()">Log in</button></p><div class="row" style="margin-bottom:0"><div><a href="#" onclick="U.scr='forgot';render();return false">Forgot password?</a></div><div style="text-align:right"><a href="#" onclick="U.scr='create';render();return false">Create school</a></div></div></div>`;
+  return}
+ hd.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${logo(46)}<div><div style="font-size:20px;font-weight:700">${esc(SCH.name)}</div><div class="mu">SSR · ${esc(ME.username)} · ${ME.role=="admin"?"Administrator":"Grade "+esc(ME.main_class)+" class teacher"} · <a href="#" onclick="logout();return false">Log out</a></div></div></div>`;
+ if(BUSY){A.innerHTML=pre+`<div class="card mu">Loading…</div>`;return}
+ if(ME.role=="admin"){A.innerHTML=pre+adm();return}
+ Tb.innerHTML=[["daily","Daily"],["period","Period"],["food","Food"],["con","Parents"],["stg","⚙"]].map(t=>`<button class="${U.tab==t[0]?"on":""}" onclick="U.tab='${t[0]}';show()">${t[1]}</button>`).join("");
+ if(U.tab=="stg")A.innerHTML=pre+stg();
+ else if(U.tab=="food")A.innerHTML=pre+foodV();
+ else if(U.tab=="con")A.innerHTML=pre+cView();
+ else if(U.tab=="period")A.innerHTML=pre+((!ME.subject||!(ME.period_classes||[]).length)?`<div class="card">Choose your subject and classes under ⚙ first.</div>`:regV());
+ else A.innerHTML=pre+regV()}
+/* ---------- start ---------- */
+if(!/PASTE_SUPABASE/.test(CFG.url+CFG.key)){sb=supabase.createClient(CFG.url,CFG.key);
+ sb.auth.onAuthStateChange(ev=>{if(ev=="PASSWORD_RECOVERY"){ME=null;U.scr="newpw";render()}});
+ if(/type=recovery/.test(location.hash)){U.scr="newpw";render()}else boot()}else render();
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
